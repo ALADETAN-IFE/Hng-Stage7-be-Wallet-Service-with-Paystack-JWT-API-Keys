@@ -31,8 +31,8 @@ export const getApiDocs = async () => {
       tags: [
         { name: 'Auth', description: 'Authentication and JWT generation' },
         { name: 'API Keys', description: 'API Key management for services' },
-        { name: 'Wallet', description: 'Balance, Transfers, and Transactions' },
-        { name: 'Paystack', description: 'Deposit initialization and Webhooks' },
+        { name: 'Wallet', description: 'Balance, Deposit Status, Deposit initialization, Transactions and Transfers' },
+        { name: 'Paystack', description: 'Webhook to handle Paystack events' },
       ],
     },
   });
