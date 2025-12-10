@@ -40,10 +40,13 @@ import mongoose from 'mongoose';
  *         description: Recipient wallet not found
  */
 export async function POST(request: NextRequest) {
-  const session = await mongoose.startSession();
+  let session;
+  let transactionStarted = false;
   
   try {
     await connectDB();
+    
+    session = await mongoose.startSession();
 
     const { user, error } = await authenticate(request);
 
@@ -69,10 +72,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          status: 'error',
+          statusCode: 400,
+          message: 'Invalid JSON format. Please check your request body and ensure all values are properly formatted.',
+        },
+        { status: 400 }
+      );
+    }
+
     const { wallet_number, amount } = body;
 
-    if (!wallet_number || !amount) {
+    if (!wallet_number || amount === undefined || amount === null) {
       return NextResponse.json(
         {
           status: 'error',
@@ -83,18 +99,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (typeof wallet_number !== 'string' || wallet_number.trim() === '' || /^0+$/.test(wallet_number)) {
       return NextResponse.json(
         {
           status: 'error',
           statusCode: 400,
-          message: 'Amount must be a positive number',
+          message: 'Invalid wallet number',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (typeof amount !== 'number' || amount <= 0 || !Number.isFinite(amount)) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          statusCode: 400,
+          message: 'Amount must be a positive number greater than 0',
         },
         { status: 400 }
       );
     }
 
     session.startTransaction();
+    transactionStarted = true;
 
     const senderWallet = await Wallet.findById(user.walletId).session(session);
 
@@ -187,7 +215,9 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    await session.abortTransaction();
+    if (session && transactionStarted) {
+      await session.abortTransaction();
+    }
     console.error('Transfer Error:', error);
     return NextResponse.json(
       {
@@ -199,6 +229,8 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   } finally {
-    session.endSession();
+    if (session) {
+      session.endSession();
+    }
   }
 }
