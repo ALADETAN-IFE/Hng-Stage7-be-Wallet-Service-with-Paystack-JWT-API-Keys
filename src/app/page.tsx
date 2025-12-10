@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
 
@@ -6,27 +5,36 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>Wallet Service API</h1>
-          <p>
-            A secure wallet service with Google OAuth, API key authentication, 
-            Paystack payment integration, and wallet-to-wallet transfers.
+        <div className={styles.hero}>
+          <h1 className={styles.title}>Wallet Service API</h1>
+          <p className={styles.description}>
+            A secure and scalable wallet service with Google OAuth authentication, 
+            API key management, Paystack payment integration, and seamless wallet-to-wallet transfers.
           </p>
         </div>
+
+        <div className={styles.features}>
+          <div className={styles.feature}>
+            <h3>🔐 Authentication</h3>
+            <p>Google OAuth with JWT tokens and API key management</p>
+          </div>
+          <div className={styles.feature}>
+            <h3>💳 Payments</h3>
+            <p>Secure Paystack integration with webhook handling</p>
+          </div>
+          <div className={styles.feature}>
+            <h3>💰 Transfers</h3>
+            <p>Fast and reliable wallet-to-wallet transactions</p>
+          </div>
+          <div className={styles.feature}>
+            <h3>📊 Tracking</h3>
+            <p>Complete transaction history and balance management</p>
+          </div>
+        </div>
+
         <div className={styles.ctas}>
-          <Link
-            className={styles.primary}
-            href="/api-doc"
-          >
-            View API Documentation
+          <Link className={styles.primary} href="/api-doc">
+            📚 View API Documentation
           </Link>
           <a
             className={styles.secondary}
@@ -34,7 +42,7 @@ export default function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            GitHub Repository
+            🔗 GitHub Repository
           </a>
         </div>
       </main>
