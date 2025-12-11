@@ -114,6 +114,18 @@ export async function POST(request: NextRequest) {
       } else {
         await transaction.save();
       }
+    } else if (event.event === 'charge.failed' || event.event === 'charge.declined') {
+      const { reference } = event.data;
+
+      const transaction = await Transaction.findOne({ reference });
+
+      if (transaction) {
+        transaction.status = 'failed';
+        await transaction.save();
+        console.log(`Transaction ${reference} marked as failed due to ${event.event}`);
+      } else {
+        console.error(`Transaction not found for reference: ${reference}`);
+      }
     }
 
     return NextResponse.json({ status: true, statusCode: 200 }, { status: 200 });
