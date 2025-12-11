@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
 
     const paystackSignature = request.headers.get('x-paystack-signature');
     const body = await request.text();
+    console.log("webhook received", body);
 
     if (!paystackSignature) {
       return NextResponse.json(
