@@ -105,6 +105,9 @@ export async function POST(request: NextRequest) {
       reference,
     });
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || 'http://localhost:3000';
+    const callbackUrl = `${appUrl}/api/wallet/deposit/callback?reference=${reference}`;
+
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -115,7 +118,7 @@ export async function POST(request: NextRequest) {
         email: `user_${user.userId}@wallet.com`, 
         amount: amount * 100,
         reference,
-        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/wallet/deposit/callback?reference=${reference}`,
+        callback_url: callbackUrl,
         metadata: {
           userId: user.userId,
           walletId: user.walletId,

@@ -6,12 +6,13 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams, origin } = new URL(request.url);
     const reference = searchParams.get('reference');
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || origin || 'http://localhost:3000';
 
     if (!reference) {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}?error=missing_reference`,
+        `${appUrl}?error=missing_reference`,
         { status: 302 }
       );
     }
@@ -20,14 +21,14 @@ export async function GET(request: NextRequest) {
 
     if (!transaction) {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}?error=transaction_not_found`,
+        `${appUrl}?error=transaction_not_found`,
         { status: 302 }
       );
     }
 
     if (transaction.status === 'success') {
       return NextResponse.redirect(
-        `${process.env.NEXT_PUBLIC_APP_URL}?status=success&reference=${reference}`,
+        `${appUrl}?status=success&reference=${reference}`,
         { status: 302 }
       );
     }
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
             );
 
             return NextResponse.redirect(
-              `${process.env.NEXT_PUBLIC_APP_URL}?status=success&reference=${reference}&amount=${transaction.amount}`,
+              `${appUrl}?status=success&reference=${reference}&amount=${transaction.amount}`,
               { status: 302 }
             );
           }
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
           console.log(`Callback: Transaction ${reference} marked as failed (${paystackStatus})`);
 
           return NextResponse.redirect(
-            `${process.env.NEXT_PUBLIC_APP_URL}?status=failed&reference=${reference}`,
+            `${appUrl}?status=failed&reference=${reference}`,
             { status: 302 }
           );
         }
@@ -84,13 +85,15 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}?status=pending&reference=${reference}`,
+      `${appUrl}?status=pending&reference=${reference}`,
       { status: 302 }
     );
   } catch (error) {
     console.error('Deposit Callback Error:', error);
+    const { origin } = new URL(request.url);
+    const fallbackUrl = process.env.NEXT_PUBLIC_APP_URL || origin || 'http://localhost:3000';
     return NextResponse.redirect(
-      `${process.env.NEXT_PUBLIC_APP_URL}?error=callback_failed`,
+      `${fallbackUrl}?error=callback_failed`,
       { status: 302 }
     );
   }
