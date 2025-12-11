@@ -3,6 +3,7 @@ import { authenticate, hasPermission } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Transaction } from '@/models';
 import crypto from 'crypto';
+import { depositSchema } from '@/lib/validation';
 
 /**
  * @swagger
@@ -80,18 +81,27 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { amount } = body;
-
-    if (!amount || typeof amount !== 'number' || amount <= 0) {
+    
+    const validation = depositSchema.safeParse(body);
+    
+    if (!validation.success) {
+      const errors = validation.error.issues.map((err) => ({
+        field: err.path.join('.'),
+        message: err.message,
+      }));
+      
       return NextResponse.json(
         {
           status: 'error',
           statusCode: 400,
-          message: 'Valid amount is required',
+          message: 'Validation failed',
+          errors,
         },
         { status: 400 }
       );
     }
+
+    const { amount, email, currency } = validation.data;
 
     const reference = `DEP_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 
@@ -105,9 +115,6 @@ export async function POST(request: NextRequest) {
       reference,
     });
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || request.headers.get('origin') || 'http://localhost:3000';
-    const callbackUrl = `${appUrl}/api/wallet/deposit/callback?reference=${reference}`;
-
     const paystackResponse = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',
       headers: {
@@ -115,10 +122,10 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: `user_${user.userId}@wallet.com`, 
+        email: email || `user_${user.userId}@wallet.com`, 
         amount: amount * 100,
         reference,
-        callback_url: callbackUrl,
+        currency,
         metadata: {
           userId: user.userId,
           walletId: user.walletId,
