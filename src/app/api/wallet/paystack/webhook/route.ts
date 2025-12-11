@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     }
 
     const event = JSON.parse(body);
+    console.log("webhook event details", event)
 
     if (event.event === 'charge.success') {
       const { reference, status, amount } = event.data;
