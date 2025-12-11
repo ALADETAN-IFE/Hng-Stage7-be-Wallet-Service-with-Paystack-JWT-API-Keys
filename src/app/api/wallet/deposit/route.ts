@@ -3,7 +3,6 @@ import { authenticate, hasPermission } from '@/lib/auth';
 import { connectDB } from '@/lib/db';
 import { Transaction } from '@/models';
 import crypto from 'crypto';
-import { depositSchema } from '@/lib/validation';
 
 /**
  * @swagger
@@ -81,27 +80,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
-    const validation = depositSchema.safeParse(body);
-    
-    if (!validation.success) {
-      const errors = validation.error.issues.map((err) => ({
-        field: err.path.join('.'),
-        message: err.message,
-      }));
-      
+    const { amount } = body;
+
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
       return NextResponse.json(
         {
           status: 'error',
           statusCode: 400,
-          message: 'Validation failed',
-          errors,
+          message: 'Valid amount is required',
         },
         { status: 400 }
       );
     }
-
-    const { amount, email, currency } = validation.data;
 
     const reference = `DEP_${Date.now()}_${crypto.randomBytes(8).toString('hex')}`;
 
@@ -122,10 +112,10 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: email || `user_${user.userId}@wallet.com`, 
+        email: `user_${user.userId}@wallet.com`, 
         amount: amount * 100,
         reference,
-        currency,
+        callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/wallet/deposit/callback?reference=${reference}`,
         metadata: {
           userId: user.userId,
           walletId: user.walletId,
