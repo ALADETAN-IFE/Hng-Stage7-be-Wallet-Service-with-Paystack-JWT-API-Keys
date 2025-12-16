@@ -13,7 +13,7 @@
     "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.1",
-    "next": "16.0.8",
+    "next": "16.0.10",
     "next-swagger-doc": "^0.4.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
