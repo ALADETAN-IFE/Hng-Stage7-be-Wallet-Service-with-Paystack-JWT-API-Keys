@@ -1,10 +1,10 @@
-// import Link from "next/link";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function Home() {
   return (
     <div className={styles.page}>
-      {/* <main className={styles.main}>
+      <main className={styles.main}>
         <div className={styles.hero}>
           <h1 className={styles.title}>Wallet Service API</h1>
           <p className={styles.description}>
@@ -45,7 +45,7 @@ export default function Home() {
             🔗 GitHub Repository
           </a>
         </div>
-      </main> */}
+      </main>
     </div>
   );
 }
